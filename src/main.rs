@@ -1,4 +1,4 @@
-use actix_web::{get, post, delete, web, App, HttpResponse, HttpServer, Responder};
+use actix_web::{get, post, delete, put, web, App, HttpResponse, HttpServer, Responder};
 use serde::{Serialize, Deserialize};
 use std::sync::Mutex;
 
@@ -51,12 +51,28 @@ async fn insert_entry(data: web::Data<Appstate>,
     HttpResponse::Ok().json(entries.to_vec())
 }
 
-#[delete("/list/entries/{i}")]
+#[delete("/list/entries/{id}")]
 async fn delete_entry(data: web::Data<Appstate>,
                       id: web::Path<i32>) -> impl Responder{
     let mut entries = data.entries.lock().unwrap();
     let id = id.into_inner();
     *entries = entries.to_vec().into_iter().filter(|x| x.id != id).collect();
+
+    HttpResponse::Ok().json(entries.to_vec())
+}
+
+#[put("/list/entries/{id}")]
+async fn update_entry(data: web::Data<Appstate>,
+                      id: web::Path<i32>,
+                      entry_info: web::Json<UpdateEntrydata>) -> impl Responder{
+    let mut entries = data.entries.lock().unwrap();
+    let id = id.into_inner();
+    for i in 0..entries.len() {
+        if entries[i].id == id {
+            entries[i].entry = entry_info.entry.clone();
+            break;
+        }
+    }
 
     HttpResponse::Ok().json(entries.to_vec())
 }
@@ -95,6 +111,7 @@ async fn main() -> std::io::Result<()> {
             .service(get_list)
             .service(insert_entry)
             .service(delete_entry)
+            .service(update_entry)
     })
     .bind(("127.0.0.1", 8080))?
     .run()
