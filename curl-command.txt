@@ -1,0 +1,9 @@
+curl 127.0.0.1:8080/list/entries --write-out "\n"
+
+curl --request POST -H "Content-Type: application/json" --data '{"entry": "Say HI"}' 127.0.0.1:8080/list/entries --write-out "\n"
+
+curl --request POST -H "Content-Type: application/json" --data '{"entry": "Say bye"}' 127.0.0.1:8080/list/entries --write-out "\n"
+
+curl --request PUT -H "Content-Type: application/json" --data '{"entry": "Say: See you later"}' 127.0.0.1:8080/list/entries/2 --write-out "\n"
+
+curl 127.0.0.1:8080/list/entries --write-out "\n"
