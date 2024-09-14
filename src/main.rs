@@ -19,6 +19,11 @@ pub struct InsertEntrydata {
 }
 
 #[derive(Deserialize, Clone)]
+pub struct AllInsertEntryData {
+    pub entries: Vec<InsertEntrydata>,
+}
+
+#[derive(Deserialize, Clone)]
 struct UpdateEntrydata {
     pub entry: String,
 }
@@ -35,7 +40,7 @@ async fn get_list(data: web::Data<Appstate>) -> impl Responder {
 
 #[post("/list/entries")]
 async fn insert_entry(data: web::Data<Appstate>,
-                      entry_info: web::Json<InsertEntrydata>) -> impl Responder {
+                      entry_info: web::Json<AllInsertEntryData>) -> impl Responder {
     let mut entries = data.entries.lock().unwrap();
     let mut maxid: i32 = 0;
     for i in 0..entries.len() {
@@ -43,10 +48,13 @@ async fn insert_entry(data: web::Data<Appstate>,
             maxid = entries[i].id;
         }
     }
-    entries.push(ListEntry{
-        id: maxid + 1,
-        entry: entry_info.entry.clone(),
-    });
+    for i in 0..entry_info.entries.len(){
+        entries.push(ListEntry{
+            id: maxid + 1,
+            entry: entry_info.entries[i].entry.clone(),
+        });
+        maxid += 1;
+    }
 
     HttpResponse::Ok().json(entries.to_vec())
 }
