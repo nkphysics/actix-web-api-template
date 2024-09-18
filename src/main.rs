@@ -9,7 +9,7 @@ struct Appstate {
 
 #[derive(Serialize, Deserialize, Clone)]
 struct ListEntry {
-    id: i32,
+    id: u32,
     entry: String,
 }
 
@@ -21,6 +21,11 @@ pub struct InsertEntrydata {
 #[derive(Deserialize, Clone)]
 pub struct AllInsertEntryData {
     pub entries: Vec<InsertEntrydata>,
+}
+
+#[derive(Deserialize, Clone)]
+pub struct DeleteEntryData {
+    pub ids: Vec<u32>,
 }
 
 #[derive(Deserialize, Clone)]
@@ -42,7 +47,7 @@ async fn get_list(data: web::Data<Appstate>) -> impl Responder {
 async fn insert_entry(data: web::Data<Appstate>,
                       entry_info: web::Json<AllInsertEntryData>) -> impl Responder {
     let mut entries = data.entries.lock().unwrap();
-    let mut maxid: i32 = 0;
+    let mut maxid: u32 = 0;
     for i in 0..entries.len() {
         if entries[i].id > maxid{
             maxid = entries[i].id;
@@ -59,19 +64,20 @@ async fn insert_entry(data: web::Data<Appstate>,
     HttpResponse::Ok().json(entries.to_vec())
 }
 
-#[delete("/list/entries/{id}")]
+#[delete("/list/entries")]
 async fn delete_entry(data: web::Data<Appstate>,
-                      id: web::Path<i32>) -> impl Responder{
+                      idvec: web::Json<DeleteEntryData>) -> impl Responder{
     let mut entries = data.entries.lock().unwrap();
-    let id = id.into_inner();
-    *entries = entries.to_vec().into_iter().filter(|x| x.id != id).collect();
-
+    for i in 0..idvec.ids.len(){
+        let id = idvec.ids[i];
+        *entries = entries.to_vec().into_iter().filter(|x| x.id != id).collect();
+    }
     HttpResponse::Ok().json(entries.to_vec())
 }
 
 #[put("/list/entries/{id}")]
 async fn update_entry(data: web::Data<Appstate>,
-                      id: web::Path<i32>,
+                      id: web::Path<u32>,
                       entry_info: web::Json<UpdateEntrydata>) -> impl Responder{
     let mut entries = data.entries.lock().unwrap();
     let id = id.into_inner();
