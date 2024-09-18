@@ -7,3 +7,7 @@ curl --request POST -H "Content-Type: application/json" --data '{"entry": "Say b
 curl --request PUT -H "Content-Type: application/json" --data '{"entry": "Say: See you later"}' 127.0.0.1:8080/list/entries/2 --write-out "\n"
 
 curl 127.0.0.1:8080/list/entries --write-out "\n"
+
+curl --request POST -H "Content-Type: application/json" --data '{"entries": [{"entry": "Say 3"}, {"entry": "Say 4"}, {"entry": "Say 5"}]}' 127.0.0.1:8080/list/entries --write-out "\n"
+
+curl --request DELETE -H "Content-Type: application/json" --data '{"ids": [1, 2]}' 127.0.0.1:8080/list/entries --write-out "\n"
